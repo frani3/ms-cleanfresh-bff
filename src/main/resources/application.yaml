@@ -1,3 +1,26 @@
+server:
+  port: 8080
+
 spring:
   application:
     name: ms-cleanfresh-bff
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
+          jwk-set-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys
+          audiences: ${AZURE_API_CLIENT_ID}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never
+
+azure:
+  tenant-id: ${AZURE_TENANT_ID}
+  client-id: ${AZURE_API_CLIENT_ID}
