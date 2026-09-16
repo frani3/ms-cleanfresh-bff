@@ -2,15 +2,12 @@ server:
   port: 8080
 
 spring:
-  application:
-    name: ms-cleanfresh-bff
   security:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/v2.0
-          jwk-set-uri: https://login.microsoftonline.com/${AZURE_TENANT_ID}/discovery/v2.0/keys
-          audiences: ${AZURE_API_CLIENT_ID}
+          issuer-uri: https://ced0d159-4118-41be-b6a5-16f7a9a9298b.ciamlogin.com/ced0d159-4118-41be-b6a5-16f7a9a9298b/v2.0
+          audiences: 4823b4a7-6749-4cd0-b83c-aa8b4db59d50
 
 management:
   endpoints:
