@@ -21,3 +21,9 @@ management:
 azure:
   tenant-id: ${AZURE_TENANT_ID}
   client-id: ${AZURE_API_CLIENT_ID}
+
+microservices:
+  orders:
+    base-url: ${ORDERS_SERVICE_URL:http://localhost:8081}
+  catalog:
+    base-url: ${CATALOG_SERVICE_URL:http://localhost:8082}

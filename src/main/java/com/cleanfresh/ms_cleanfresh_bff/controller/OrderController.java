@@ -1,70 +1,43 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
+import com.cleanfresh.ms_cleanfresh_bff.service.OrderService;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.time.Instant;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
 
 /**
- * Endpoints CRUD basicos para ordenes de lavanderia.
- * Placeholder en memoria: la logica real debera delegarse a un microservicio downstream.
+ * Republica ordenes de lavanderia desde ms-cleanfresh-orders.
  */
 @RestController
 @RequestMapping("/api/orders")
 public class OrderController {
 
-    private final Map<Long, Order> orders = new ConcurrentHashMap<>();
-    private final AtomicLong idGenerator = new AtomicLong(1);
+    private final OrderService orderService;
+
+    public OrderController(OrderService orderService) {
+        this.orderService = orderService;
+    }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
-    public Iterable<Order> getAll() {
-        return orders.values();
+    @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
+    public List<OrderResponse> getAll() {
+        return orderService.getAll();
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR', 'VIEWER')")
-    public ResponseEntity<Order> getById(@PathVariable Long id) {
-        Order order = orders.get(id);
-        return order != null ? ResponseEntity.ok(order) : ResponseEntity.notFound().build();
+    @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
+    public OrderResponse getById(@PathVariable Long id) {
+        return orderService.getById(id);
     }
 
-    @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
-    public ResponseEntity<Order> create(@RequestBody OrderRequest request) {
-        long id = idGenerator.getAndIncrement();
-        Order order = new Order(id, request.customerName(), request.status(), Instant.now());
-        orders.put(id, order);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
-    }
-
-    @PutMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'OPERATOR')")
-    public ResponseEntity<Order> update(@PathVariable Long id, @RequestBody OrderRequest request) {
-        if (!orders.containsKey(id)) {
-            return ResponseEntity.notFound().build();
-        }
-        Order existing = orders.get(id);
-        Order updated = new Order(id, request.customerName(), request.status(), existing.createdAt());
-        orders.put(id, updated);
-        return ResponseEntity.ok(updated);
-    }
-
-    @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Void> delete(@PathVariable Long id) {
-        Order removed = orders.remove(id);
-        return removed != null ? ResponseEntity.noContent().build() : ResponseEntity.notFound().build();
-    }
-
-    public record Order(Long id, String customerName, String status, Instant createdAt) {
-    }
-
-    public record OrderRequest(String customerName, String status) {
+    @GetMapping("/estado/{estado}")
+    @PreAuthorize("hasAnyRole('Admin', 'Operador')")
+    public List<OrderResponse> getByEstado(@PathVariable String estado) {
+        return orderService.getByEstado(estado);
     }
 }
