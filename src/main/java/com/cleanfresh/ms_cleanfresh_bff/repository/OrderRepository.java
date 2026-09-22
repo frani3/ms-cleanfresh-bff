@@ -1,5 +1,6 @@
 package com.cleanfresh.ms_cleanfresh_bff.repository;
 
+import com.cleanfresh.ms_cleanfresh_bff.dto.OrderCreateRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.ParameterizedTypeReference;
@@ -44,5 +45,13 @@ public class OrderRepository {
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<OrderResponse>>() {
                 });
+    }
+
+    public OrderResponse create(OrderCreateRequest request) {
+        return restClient.post()
+                .uri("/api/orders")
+                .body(request)
+                .retrieve()
+                .body(OrderResponse.class);
     }
 }
