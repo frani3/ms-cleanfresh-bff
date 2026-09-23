@@ -6,8 +6,11 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: https://ced0d159-4118-41be-b6a5-16f7a9a9298b.ciamlogin.com/ced0d159-4118-41be-b6a5-16f7a9a9298b/v2.0
-          audiences: 4823b4a7-6749-4cd0-b83c-aa8b4db59d50
+          # Los access tokens de Cognito no traen claim "aud" (a diferencia
+          # de Azure), así que acá no se usa "audiences" — la validación
+          # de a qué app pertenece el token la hace CognitoTokenValidator
+          # contra el claim "client_id" (ver SecurityConfig).
+          issuer-uri: ${COGNITO_ISSUER_URI}
 
 management:
   endpoints:
@@ -18,9 +21,9 @@ management:
     health:
       show-details: never
 
-azure:
-  tenant-id: ${AZURE_TENANT_ID}
-  client-id: ${AZURE_API_CLIENT_ID}
+cognito:
+  client-id: ${COGNITO_CLIENT_ID}
+  required-scope: ${COGNITO_REQUIRED_SCOPE:https://api.cleanfresh.com/access_as_user}
 
 microservices:
   orders:

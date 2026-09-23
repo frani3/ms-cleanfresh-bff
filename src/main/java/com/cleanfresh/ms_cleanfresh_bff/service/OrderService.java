@@ -14,9 +14,13 @@ import java.util.Set;
 @Service
 public class OrderService {
 
-    // Mapeo mock email -> sucursal "de base". No hay base de datos ni claim
-    // custom en Azure para esto todavía (ver Spec 016); cuando eso exista,
-    // este mapa se reemplaza por una consulta real.
+    // Mapeo mock username de Cognito -> sucursal "de base". No hay base de
+    // datos ni claim custom todavía (ver Spec 016); cuando eso exista, este
+    // mapa se reemplaza por una consulta real.
+    // OJO: "username" en Cognito puede ser el email o un identificador
+    // random según cómo esté configurado el User Pool — confirmar el valor
+    // real del usuario de prueba Operador y ajustar esta clave si no
+    // coincide.
     private static final Map<String, String> SUCURSAL_POR_OPERADOR = Map.of(
             "operador@cleanfreshchain.onmicrosoft.com", "Providencia"
     );
@@ -91,16 +95,16 @@ public class OrderService {
         );
     }
 
+    // El access token de Cognito (el que llega acá, no el idToken) no trae
+    // "name" ni "preferred_username" — esos son claims del idToken. El
+    // único identificador de la persona disponible en el access token es
+    // "username".
     private String nombreDesdeToken(JwtAuthenticationToken authentication) {
-        String name = authentication.getToken().getClaimAsString("name");
-        if (name != null && !name.isBlank()) {
-            return name;
-        }
-        return authentication.getToken().getClaimAsString("preferred_username");
+        return authentication.getToken().getClaimAsString("username");
     }
 
     // Prioridad: sucursal pedida explícitamente por query param (si es
-    // válida) -> mapeo fijo email->sucursal -> null (sin sucursal).
+    // válida) -> mapeo fijo username->sucursal -> null (sin sucursal).
     private String resolverSucursal(JwtAuthenticationToken authentication, String sucursalSolicitada) {
         if (sucursalSolicitada != null) {
             for (String valida : SUCURSALES_VALIDAS) {
@@ -109,10 +113,10 @@ public class OrderService {
                 }
             }
         }
-        String email = authentication.getToken().getClaimAsString("preferred_username");
-        if (email == null) {
+        String username = authentication.getToken().getClaimAsString("username");
+        if (username == null) {
             return null;
         }
-        return SUCURSAL_POR_OPERADOR.get(email.toLowerCase());
+        return SUCURSAL_POR_OPERADOR.get(username.toLowerCase());
     }
 }

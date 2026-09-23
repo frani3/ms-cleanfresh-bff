@@ -31,8 +31,10 @@ public class HealthController {
         Jwt jwt = authentication.getToken();
         Map<String, Object> user = new LinkedHashMap<>();
         user.put("subject", jwt.getSubject());
-        user.put("name", jwt.getClaimAsString("name"));
-        user.put("preferredUsername", jwt.getClaimAsString("preferred_username"));
+        // El access token de Cognito no trae "name"/"preferred_username"
+        // (eso es del idToken) — el identificador disponible acá es
+        // "username".
+        user.put("username", jwt.getClaimAsString("username"));
         user.put("authorities", authentication.getAuthorities().stream()
                 .map(Object::toString)
                 .toList());
