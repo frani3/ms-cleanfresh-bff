@@ -101,3 +101,14 @@ ejemplo, `/api/reportes` responde 401 sin token, 403 a Operador y Cliente, y
 
 Ver [`CLAUDE.md`](CLAUDE.md) para el contexto del sistema y, en el repo del
 frontend, `EP2/ARQUITECTURA.md` para la arquitectura objetivo de la entrega 2.
+
+## Docker
+
+`Dockerfile` multi-etapa (Maven + JDK 21 para compilar, JRE 21 sin root para correr). Se configura solo por variables de entorno.
+
+```bash
+docker build -t cleanfresh/bff .
+docker run -p 8080:8080 -e COGNITO_ISSUER_URI=... -e COGNITO_CLIENT_ID=... -e ORDERS_SERVICE_URL=http://<ip-ec2-2>:8081 -e CATALOG_SERVICE_URL=http://<ip-ec2-2>:8082 -e REPORTES_SERVICE_URL=http://<ip-ec2-2>:8084 -e AUDITORIA_SERVICE_URL=http://<ip-ec2-2>:8085 cleanfresh/bff
+```
+
+Los 5 microservicios se levantan juntos con el `docker-compose.yml` de `EP2/despliegue/` en el repo `cleanfresh-frontend`.
