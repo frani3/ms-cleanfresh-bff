@@ -1,22 +1,23 @@
 # ms-cleanfresh-bff
 
 Backend-for-Frontend de Clean&Fresh Manager. Spring Boot 4.1.1 / Java
-21. Valida el JWT (idToken) emitido por Azure Entra External ID (CIAM)
-en cada request, aplica autorización por rol, y republica los datos de
-`ms-cleanfresh-orders` y `ms-cleanfresh-catalog` con un contrato propio
-hacia el frontend.
+21. Valida el JWT (access token) emitido por AWS Cognito en cada request,
+aplica autorización por rol y republica los datos de los microservicios con
+un contrato propio hacia el frontend. Los microservicios confían totalmente
+en él: es el único punto que autentica y autoriza.
 
-Proyecto individual para **EP1** de **DSY1107 Cloud Native 1** (DuocUC).
+Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 
 ## Qué hace
 
-- Valida issuer, audience, firma y vigencia del JWT (auto-config nativa
-  de Spring Security OAuth2 Resource Server — sin código manual).
-- Extrae roles del claim `roles` del token y los mapea a authorities
+- Valida issuer, firma y vigencia del JWT (Spring Security OAuth2 Resource
+  Server) y, con `CognitoTokenValidator`, que sea un access token
+  (`token_use`), emitido para esta app (`client_id`) y con el scope
+  `https://api.cleanfresh.com/access_as_user`.
+- Extrae los roles del claim `cognito:groups` y los mapea a authorities
   `ROLE_*`.
 - Autoriza cada endpoint por rol con `@PreAuthorize`.
-- Reenvía las peticiones (GET, y un POST de creación de órdenes) a los
-  dos microservicios vía `RestClient`.
+- Reenvía las peticiones a los microservicios con `RestClient`.
 
 ## Endpoints
 
@@ -31,28 +32,34 @@ Proyecto individual para **EP1** de **DSY1107 Cloud Native 1** (DuocUC).
 | GET | `/api/orders/{id}` | Admin, Operador, Cliente | Una orden |
 | GET | `/api/orders/estado/{estado}` | Admin, Operador | Órdenes por estado |
 | POST | `/api/orders` | Admin, Cliente | Crea una orden (el `cliente` se resuelve del JWT, no del body) |
+| GET | `/api/reportes` | Admin | Reporte por sucursal (hoy respuesta fija, EP2) |
+| GET | `/api/auditoria` | Admin | Registro de auditoría (hoy respuesta fija, EP2) |
+
+`ms-cleanfresh-notificaciones` no tiene ruta aquí: solo recibe mensajes de SQS.
 
 ## Requisitos
 
 - Java 21 (`JAVA_HOME` apuntando a un JDK 21)
-- `ms-cleanfresh-orders` corriendo en `:8081`
-- `ms-cleanfresh-catalog` corriendo en `:8082`
+- Un User Pool de Cognito alcanzable: al arrancar consulta la configuración
+  del emisor, así que sin red o con un `COGNITO_ISSUER_URI` inválido no inicia.
+- Los microservicios que se vayan a usar: `orders` (:8081), `catalog` (:8082),
+  `reportes` (:8084), `auditoria` (:8085).
 
-## Configuración
-
-`src/main/resources/application.yaml` ya trae el `issuer-uri` y
-`audiences` del tenant CIAM del proyecto. Antes de levantar, exportar:
+## Configuración (variables de entorno)
 
 ```powershell
-$env:AZURE_TENANT_ID = "<tenant id>"
-$env:AZURE_API_CLIENT_ID = "<client id de la app registration del API>"
+$env:COGNITO_ISSUER_URI = "https://cognito-idp.<region>.amazonaws.com/<user-pool-id>"
+$env:COGNITO_CLIENT_ID  = "<client id del App Client>"
 ```
 
-Opcional, si los microservicios no corren en los puertos por defecto:
+Opcionales:
 
 ```powershell
-$env:ORDERS_SERVICE_URL = "http://localhost:8081"
-$env:CATALOG_SERVICE_URL = "http://localhost:8082"
+$env:COGNITO_REQUIRED_SCOPE = "https://api.cleanfresh.com/access_as_user"   # valor por defecto
+$env:ORDERS_SERVICE_URL     = "http://localhost:8081"
+$env:CATALOG_SERVICE_URL    = "http://localhost:8082"
+$env:REPORTES_SERVICE_URL   = "http://localhost:8084"
+$env:AUDITORIA_SERVICE_URL  = "http://localhost:8085"
 ```
 
 ## Levantar en local
@@ -83,7 +90,14 @@ curl -i http://localhost:8080/api/orders -H "Authorization: Bearer invalido"
 curl -i http://localhost:8080/actuator/health
 ```
 
+## Tests
+
+`.\mvnw.cmd test` no necesita red ni Cognito: reemplaza el `JwtDecoder` por un
+mock y usa tokens simulados para comprobar la autorización por rol (por
+ejemplo, `/api/reportes` responde 401 sin token, 403 a Operador y Cliente, y
+200 a Admin).
+
 ## Arquitectura y decisiones técnicas
 
-Ver [`CLAUDE.md`](CLAUDE.md) para el detalle completo del sistema (los
-4 repos, configuración de Azure, y la pauta de evaluación de EP1).
+Ver [`CLAUDE.md`](CLAUDE.md) para el contexto del sistema y, en el repo del
+frontend, `EP2/ARQUITECTURA.md` para la arquitectura objetivo de la entrega 2.

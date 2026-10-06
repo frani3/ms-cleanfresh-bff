@@ -30,3 +30,7 @@ microservices:
     base-url: ${ORDERS_SERVICE_URL:http://localhost:8081}
   catalog:
     base-url: ${CATALOG_SERVICE_URL:http://localhost:8082}
+  reportes:
+    base-url: ${REPORTES_SERVICE_URL:http://localhost:8084}
+  auditoria:
+    base-url: ${AUDITORIA_SERVICE_URL:http://localhost:8085}

@@ -24,4 +24,16 @@ public class RestClientConfig {
     public RestClient catalogRestClient(@Value("${microservices.catalog.base-url}") String baseUrl) {
         return RestClient.builder().baseUrl(baseUrl).build();
     }
+
+    @Bean
+    @Qualifier("reportesRestClient")
+    public RestClient reportesRestClient(@Value("${microservices.reportes.base-url}") String baseUrl) {
+        return RestClient.builder().baseUrl(baseUrl).build();
+    }
+
+    @Bean
+    @Qualifier("auditoriaRestClient")
+    public RestClient auditoriaRestClient(@Value("${microservices.auditoria.base-url}") String baseUrl) {
+        return RestClient.builder().baseUrl(baseUrl).build();
+    }
 }
