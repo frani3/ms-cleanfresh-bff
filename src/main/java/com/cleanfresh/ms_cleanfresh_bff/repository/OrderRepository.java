@@ -1,5 +1,6 @@
 package com.cleanfresh.ms_cleanfresh_bff.repository;
 
+import com.cleanfresh.ms_cleanfresh_bff.dto.EstadoRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderCreateRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -45,6 +46,14 @@ public class OrderRepository {
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<OrderResponse>>() {
                 });
+    }
+
+    public OrderResponse updateEstado(String numeroOrden, String estado) {
+        return restClient.put()
+                .uri("/api/orders/{numeroOrden}/estado", numeroOrden)
+                .body(new EstadoRequest(estado))
+                .retrieve()
+                .body(OrderResponse.class);
     }
 
     public OrderResponse create(OrderCreateRequest request) {

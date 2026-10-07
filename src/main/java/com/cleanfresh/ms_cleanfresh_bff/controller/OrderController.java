@@ -1,5 +1,6 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import com.cleanfresh.ms_cleanfresh_bff.dto.EstadoRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
 import com.cleanfresh.ms_cleanfresh_bff.service.OrderService;
@@ -9,6 +10,7 @@ import org.springframework.security.oauth2.server.resource.authentication.JwtAut
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -58,5 +60,15 @@ public class OrderController {
     @PreAuthorize("hasAnyRole('Cliente', 'Admin')")
     public OrderResponse create(@RequestBody OrderRequest request, JwtAuthenticationToken authentication) {
         return orderService.create(authentication, request);
+    }
+
+    @PutMapping("/{numeroOrden}/estado")
+    @PreAuthorize("hasAnyRole('Admin', 'Operador')")
+    public OrderResponse cambiarEstado(
+            @PathVariable String numeroOrden,
+            @RequestBody EstadoRequest request,
+            JwtAuthenticationToken authentication,
+            @RequestParam(required = false) String sucursal) {
+        return orderService.cambiarEstado(numeroOrden, request.estado(), authentication, sucursal);
     }
 }

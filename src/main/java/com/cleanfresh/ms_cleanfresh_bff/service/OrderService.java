@@ -4,39 +4,23 @@ import com.cleanfresh.ms_cleanfresh_bff.dto.OrderCreateRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
 import com.cleanfresh.ms_cleanfresh_bff.repository.OrderRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 @Service
 public class OrderService {
 
-    // Mapeo mock username de Cognito -> sucursal "de base". No hay base de
-    // datos ni claim custom todavía (ver Spec 016); cuando eso exista, este
-    // mapa se reemplaza por una consulta real.
-    // OJO: "username" en Cognito puede ser el email o un identificador
-    // random según cómo esté configurado el User Pool — confirmar el valor
-    // real del usuario de prueba Operador y ajustar esta clave si no
-    // coincide.
-    private static final Map<String, String> SUCURSAL_POR_OPERADOR = Map.of(
-            "operador@cleanfreshchain.onmicrosoft.com", "Providencia"
-    );
-
-    // Spec 019: el operador puede elegir en qué sucursal está trabajando
-    // (como fichar turno), en vez de quedar atado para siempre al mapeo de
-    // arriba. Con datos mock esto es aceptable; con operadores reales por
-    // sucursal, este selector debería reemplazarse por algo que valide qué
-    // sucursales tiene ese usuario realmente asignadas.
-    private static final Set<String> SUCURSALES_VALIDAS =
-            Set.of("Providencia", "Ñuñoa", "Las Condes", "Maipú");
-
     private final OrderRepository orderRepository;
+    private final AccesoPorRol acceso;
 
-    public OrderService(OrderRepository orderRepository) {
+    public OrderService(OrderRepository orderRepository, AccesoPorRol acceso) {
         this.orderRepository = orderRepository;
+        this.acceso = acceso;
     }
 
     public List<OrderResponse> getAll(JwtAuthenticationToken authentication, String sucursalSolicitada) {
@@ -48,7 +32,7 @@ public class OrderService {
         if (orden == null) {
             return null;
         }
-        if (esOperador(authentication) && !esDeLaSucursalDelOperador(orden, authentication, null)) {
+        if (acceso.esOperador(authentication) && !esDeLaSucursalDelOperador(orden, authentication, null)) {
             return null;
         }
         return orden;
@@ -62,10 +46,10 @@ public class OrderService {
 
     private List<OrderResponse> filtrarPorSucursalSiCorresponde(
             List<OrderResponse> ordenes, JwtAuthenticationToken authentication, String sucursalSolicitada) {
-        if (!esOperador(authentication)) {
+        if (!acceso.esOperador(authentication)) {
             return ordenes;
         }
-        String sucursal = resolverSucursal(authentication, sucursalSolicitada);
+        String sucursal = acceso.resolverSucursal(authentication, sucursalSolicitada);
         if (sucursal == null) {
             return List.of();
         }
@@ -76,47 +60,42 @@ public class OrderService {
 
     private boolean esDeLaSucursalDelOperador(
             OrderResponse orden, JwtAuthenticationToken authentication, String sucursalSolicitada) {
-        String sucursal = resolverSucursal(authentication, sucursalSolicitada);
+        String sucursal = acceso.resolverSucursal(authentication, sucursalSolicitada);
         return sucursal != null && sucursal.equalsIgnoreCase(orden.sucursal());
-    }
-
-    private boolean esOperador(JwtAuthenticationToken authentication) {
-        return authentication.getAuthorities().stream()
-                .anyMatch(authority -> authority.getAuthority().equals("ROLE_Operador"));
     }
 
     // Spec 025: el cliente arma su propio pedido (servicio/precio/sucursal),
     // pero de quién es lo decide el JWT, no el body — así no puede crear
     // un pedido "a nombre de" otra persona.
     public OrderResponse create(JwtAuthenticationToken authentication, OrderRequest request) {
-        String cliente = nombreDesdeToken(authentication);
+        String cliente = acceso.username(authentication);
         return orderRepository.create(
                 new OrderCreateRequest(cliente, request.servicio(), request.total(), request.sucursal())
         );
     }
 
-    // El access token de Cognito (el que llega acá, no el idToken) no trae
-    // "name" ni "preferred_username" — esos son claims del idToken. El
-    // único identificador de la persona disponible en el access token es
-    // "username".
-    private String nombreDesdeToken(JwtAuthenticationToken authentication) {
-        return authentication.getToken().getClaimAsString("username");
-    }
-
-    // Prioridad: sucursal pedida explícitamente por query param (si es
-    // válida) -> mapeo fijo username->sucursal -> null (sin sucursal).
-    private String resolverSucursal(JwtAuthenticationToken authentication, String sucursalSolicitada) {
-        if (sucursalSolicitada != null) {
-            for (String valida : SUCURSALES_VALIDAS) {
-                if (valida.equalsIgnoreCase(sucursalSolicitada)) {
-                    return valida;
-                }
+    /**
+     * Spec 030: cambia el estado de una orden. El Admin puede con cualquiera; el
+     * Operador solo con las de la sucursal que tiene en turno (403 si es de otra,
+     * 404 si no existe). Un estado inválido lo rechaza orders (400).
+     */
+    public OrderResponse cambiarEstado(
+            String numeroOrden, String estado, JwtAuthenticationToken authentication, String sucursalSolicitada) {
+        if (acceso.esOperador(authentication) && !acceso.esAdmin(authentication)) {
+            OrderResponse orden = orderRepository.findAll().stream()
+                    .filter(o -> numeroOrden.equalsIgnoreCase(o.numeroOrden()))
+                    .findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada"));
+            if (!esDeLaSucursalDelOperador(orden, authentication, sucursalSolicitada)) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "La orden es de otra sucursal");
             }
         }
-        String username = authentication.getToken().getClaimAsString("username");
-        if (username == null) {
-            return null;
+        try {
+            return orderRepository.updateEstado(numeroOrden, estado);
+        } catch (HttpClientErrorException.NotFound e) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Orden no encontrada");
+        } catch (HttpClientErrorException.BadRequest e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Estado inválido");
         }
-        return SUCURSAL_POR_OPERADOR.get(username.toLowerCase());
     }
 }

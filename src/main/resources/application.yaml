@@ -34,3 +34,5 @@ microservices:
     base-url: ${REPORTES_SERVICE_URL:http://localhost:8084}
   auditoria:
     base-url: ${AUDITORIA_SERVICE_URL:http://localhost:8085}
+  notificaciones:
+    base-url: ${NOTIFICACIONES_SERVICE_URL:http://localhost:8083}

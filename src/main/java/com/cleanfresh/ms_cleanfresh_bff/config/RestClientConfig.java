@@ -8,7 +8,7 @@ import org.springframework.web.client.RestClient;
 
 /**
  * RestClient dedicado por microservicio downstream, con su base-url leida
- * desde application.yaml (microservices.orders/catalog.base-url).
+ * desde application.yaml (microservices.<servicio>.base-url).
  */
 @Configuration
 public class RestClientConfig {
@@ -34,6 +34,12 @@ public class RestClientConfig {
     @Bean
     @Qualifier("auditoriaRestClient")
     public RestClient auditoriaRestClient(@Value("${microservices.auditoria.base-url}") String baseUrl) {
+        return RestClient.builder().baseUrl(baseUrl).build();
+    }
+
+    @Bean
+    @Qualifier("notificacionesRestClient")
+    public RestClient notificacionesRestClient(@Value("${microservices.notificaciones.base-url}") String baseUrl) {
         return RestClient.builder().baseUrl(baseUrl).build();
     }
 }
