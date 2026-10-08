@@ -24,6 +24,9 @@ management:
 cognito:
   client-id: ${COGNITO_CLIENT_ID}
   required-scope: ${COGNITO_REQUIRED_SCOPE:https://api.cleanfresh.com/access_as_user}
+  # Dominio del Hosted UI (https://<prefijo>.auth.<region>.amazoncognito.com): se usa para
+  # pedir el nombre legible del usuario (Spec 032). Opcional: vacío = se usa el username.
+  domain: ${COGNITO_DOMAIN:}
 
 microservices:
   orders:

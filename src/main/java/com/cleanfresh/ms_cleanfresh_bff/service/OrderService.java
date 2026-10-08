@@ -17,10 +17,12 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final AccesoPorRol acceso;
+    private final ClienteNombreResolver nombreResolver;
 
-    public OrderService(OrderRepository orderRepository, AccesoPorRol acceso) {
+    public OrderService(OrderRepository orderRepository, AccesoPorRol acceso, ClienteNombreResolver nombreResolver) {
         this.orderRepository = orderRepository;
         this.acceso = acceso;
+        this.nombreResolver = nombreResolver;
     }
 
     public List<OrderResponse> getAll(JwtAuthenticationToken authentication, String sucursalSolicitada) {
@@ -69,8 +71,11 @@ public class OrderService {
     // un pedido "a nombre de" otra persona.
     public OrderResponse create(JwtAuthenticationToken authentication, OrderRequest request) {
         String cliente = acceso.username(authentication);
+        // Spec 032: el nombre legible lo resuelve el BFF desde Cognito, nunca el cuerpo
+        // de la petición, para que nadie pueda poner el nombre que quiera.
         return orderRepository.create(
-                new OrderCreateRequest(cliente, request.servicio(), request.total(), request.sucursal())
+                new OrderCreateRequest(cliente, request.servicio(), request.total(), request.sucursal(),
+                        nombreResolver.resolver(authentication))
         );
     }
 

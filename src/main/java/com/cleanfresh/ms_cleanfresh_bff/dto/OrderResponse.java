@@ -11,6 +11,12 @@ public record OrderResponse(
         String estado,
         String fecha,
         Double total,
-        String sucursal
+        String sucursal,
+        String clienteNombre
 ) {
+
+    public OrderResponse(Long id, String numeroOrden, String cliente, String servicio, String estado,
+                         String fecha, Double total, String sucursal) {
+        this(id, numeroOrden, cliente, servicio, estado, fecha, total, sucursal, null);
+    }
 }

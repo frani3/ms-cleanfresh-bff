@@ -37,6 +37,18 @@ public class RestClientConfig {
         return RestClient.builder().baseUrl(baseUrl).build();
     }
 
+    // Spec 032: dominio del Hosted UI de Cognito, para pedir /oauth2/userInfo. Puede venir
+    // vacío (el BFF funciona igual y las ordenes se muestran con el username).
+    @Bean
+    @Qualifier("cognitoRestClient")
+    public RestClient cognitoRestClient(@Value("${cognito.domain:}") String domain) {
+        RestClient.Builder builder = RestClient.builder();
+        if (domain != null && !domain.isBlank()) {
+            builder.baseUrl(domain);
+        }
+        return builder.build();
+    }
+
     @Bean
     @Qualifier("notificacionesRestClient")
     public RestClient notificacionesRestClient(@Value("${microservices.notificaciones.base-url}") String baseUrl) {
