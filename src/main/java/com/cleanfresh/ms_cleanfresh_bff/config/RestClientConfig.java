@@ -54,4 +54,11 @@ public class RestClientConfig {
     public RestClient notificacionesRestClient(@Value("${microservices.notificaciones.base-url}") String baseUrl) {
         return RestClient.builder().baseUrl(baseUrl).build();
     }
+
+    // Spec 033: administrador de RabbitMQ (solo lo alcanza el Admin, por MqAdminController).
+    @Bean
+    @Qualifier("mqAdminRestClient")
+    public RestClient mqAdminRestClient(@Value("${microservices.mq-admin.base-url}") String baseUrl) {
+        return RestClient.builder().baseUrl(baseUrl).build();
+    }
 }
