@@ -34,6 +34,7 @@ Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 | POST | `/api/orders` | Admin, Cliente | Crea una orden (el `cliente` se resuelve del JWT, no del body) |
 | GET | `/api/reportes` | Admin | Reporte por sucursal (hoy respuesta fija, EP2) |
 | GET | `/api/auditoria` | Admin | Registro de auditoría (hoy respuesta fija, EP2) |
+| GET/POST/DELETE | `/api/mq/**` | Admin | Administrador de RabbitMQ (Spec 033): topología, colas, exchanges, bindings y métricas. Reenvía a `ms-cleanfresh-mq-admin` (:8086) y devuelve su respuesta tal cual; solo reenvía las rutas conocidas |
 
 `ms-cleanfresh-notificaciones` no tiene ruta aquí: solo recibe mensajes de SQS.
 
@@ -60,6 +61,8 @@ $env:ORDERS_SERVICE_URL     = "http://localhost:8081"
 $env:CATALOG_SERVICE_URL    = "http://localhost:8082"
 $env:REPORTES_SERVICE_URL   = "http://localhost:8084"
 $env:AUDITORIA_SERVICE_URL  = "http://localhost:8085"
+$env:NOTIFICACIONES_SERVICE_URL = "http://localhost:8083"
+$env:MQ_ADMIN_SERVICE_URL   = "http://localhost:8086"   # administrador de RabbitMQ (Spec 033)
 ```
 
 ## Levantar en local
