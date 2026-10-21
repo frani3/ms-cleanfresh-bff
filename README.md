@@ -32,11 +32,14 @@ Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 | GET | `/api/orders/{id}` | Admin, Operador, Cliente | Una orden |
 | GET | `/api/orders/estado/{estado}` | Admin, Operador | Órdenes por estado |
 | POST | `/api/orders` | Admin, Cliente | Crea una orden (el `cliente` se resuelve del JWT, no del body) |
+| GET | `/api/notificaciones` | Admin, Operador, Cliente | Avisos según el rol: el Cliente los suyos (por el `username` del token), el Operador los de su sucursal en turno (`?sucursal=`), el Admin todos |
+| POST | `/api/notificaciones/leidas` | Admin, Operador, Cliente | Marca como leídos todos los del usuario (el Admin no marca nada: es solo lectura) |
+| POST | `/api/notificaciones/{id}/leida` | Operador, Cliente | Marca como leído **un** aviso (Spec 034). El destinatario sale del token; un aviso ajeno o inexistente responde `404`; el Admin `403` |
 | GET | `/api/reportes` | Admin | Reporte por sucursal (hoy respuesta fija, EP2) |
 | GET | `/api/auditoria` | Admin | Registro de auditoría (hoy respuesta fija, EP2) |
 | GET/POST/DELETE | `/api/mq/**` | Admin | Administrador de RabbitMQ (Spec 033): topología, colas, exchanges, bindings y métricas. Reenvía a `ms-cleanfresh-mq-admin` (:8086) y devuelve su respuesta tal cual; solo reenvía las rutas conocidas |
 
-`ms-cleanfresh-notificaciones` no tiene ruta aquí: solo consume los comandos de RabbitMQ.
+`ms-cleanfresh-notificaciones` consume los comandos de RabbitMQ y el BFF le pide los avisos filtrados por rol (ver las rutas `/api/notificaciones`).
 
 ## Requisitos
 

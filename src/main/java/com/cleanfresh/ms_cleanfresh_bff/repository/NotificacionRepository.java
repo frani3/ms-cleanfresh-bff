@@ -56,6 +56,34 @@ public class NotificacionRepository {
                 .toBodilessEntity();
     }
 
+    /**
+     * Marca UN aviso como leído (Spec 034). Solo uno de cliente/sucursal debe venir informado.
+     *
+     * @return false si el aviso no existe o no es de ese destinatario (el microservicio responde 404)
+     */
+    public boolean marcarLeida(Long id, String cliente, String sucursal) {
+        try {
+            restClient.put()
+                    .uri(uriBuilder -> {
+                        uriBuilder.path("/api/notificaciones/{id}/leida");
+                        if (cliente != null) {
+                            uriBuilder.queryParam("cliente", "{cliente}");
+                        }
+                        if (sucursal != null) {
+                            uriBuilder.queryParam("sucursal", "{sucursal}");
+                        }
+                        java.util.Map<String, Object> valores = new java.util.HashMap<>(filtros(cliente, sucursal));
+                        valores.put("id", id);
+                        return uriBuilder.build(valores);
+                    })
+                    .retrieve()
+                    .toBodilessEntity();
+            return true;
+        } catch (org.springframework.web.client.HttpClientErrorException.NotFound e) {
+            return false;
+        }
+    }
+
     private java.util.Map<String, String> filtros(String cliente, String sucursal) {
         java.util.Map<String, String> valores = new java.util.HashMap<>();
         if (cliente != null) {

@@ -2,8 +2,10 @@ package com.cleanfresh.ms_cleanfresh_bff.service;
 
 import com.cleanfresh.ms_cleanfresh_bff.dto.NotificacionResponse;
 import com.cleanfresh.ms_cleanfresh_bff.repository.NotificacionRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -55,6 +57,28 @@ public class NotificacionService {
         String cliente = acceso.username(authentication);
         if (cliente != null && !cliente.isBlank()) {
             repository.marcarLeidas(cliente, null);
+        }
+    }
+
+    /**
+     * Marca UN aviso como leído (Spec 034). El destinatario sale del token, nunca de un parámetro: un Cliente
+     * solo marca los suyos y un Operador los de su sucursal en turno. Un aviso ajeno o inexistente es
+     * "no encontrado" (404), sin distinguir cuál de las dos. El Admin es solo lectura.
+     */
+    public void marcarLeida(JwtAuthenticationToken authentication, Long id, String sucursalSolicitada) {
+        if (acceso.esAdmin(authentication)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "El Admin ve los avisos en solo lectura");
+        }
+        boolean marcado = false;
+        if (acceso.esOperador(authentication)) {
+            String sucursal = acceso.resolverSucursal(authentication, sucursalSolicitada);
+            marcado = sucursal != null && repository.marcarLeida(id, null, sucursal);
+        } else {
+            String cliente = acceso.username(authentication);
+            marcado = cliente != null && !cliente.isBlank() && repository.marcarLeida(id, cliente, null);
+        }
+        if (!marcado) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Aviso no encontrado");
         }
     }
 }

@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,5 +45,16 @@ public class NotificacionController {
             JwtAuthenticationToken authentication,
             @RequestParam(required = false) String sucursal) {
         notificacionService.marcarLeidas(authentication, sucursal);
+    }
+
+    /** Marca UN aviso como leído (Spec 034). Solo Operador y Cliente: el Admin es solo lectura (403). */
+    @PostMapping("/{id}/leida")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PreAuthorize("hasAnyRole('Operador', 'Cliente')")
+    public void marcarLeida(
+            JwtAuthenticationToken authentication,
+            @PathVariable Long id,
+            @RequestParam(required = false) String sucursal) {
+        notificacionService.marcarLeida(authentication, id, sucursal);
     }
 }
