@@ -36,7 +36,7 @@ Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 | GET | `/api/auditoria` | Admin | Registro de auditoría (hoy respuesta fija, EP2) |
 | GET/POST/DELETE | `/api/mq/**` | Admin | Administrador de RabbitMQ (Spec 033): topología, colas, exchanges, bindings y métricas. Reenvía a `ms-cleanfresh-mq-admin` (:8086) y devuelve su respuesta tal cual; solo reenvía las rutas conocidas |
 
-`ms-cleanfresh-notificaciones` no tiene ruta aquí: solo recibe mensajes de SQS.
+`ms-cleanfresh-notificaciones` no tiene ruta aquí: solo consume los comandos de RabbitMQ.
 
 ## Requisitos
 
