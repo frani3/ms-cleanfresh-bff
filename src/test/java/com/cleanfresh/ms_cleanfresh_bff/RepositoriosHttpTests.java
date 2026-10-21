@@ -131,4 +131,28 @@ class RepositoriosHttpTests {
 		assertThrows(HttpClientErrorException.NotFound.class, () -> repo.updateEstado("ORD-9999", "ACEPTADO"));
 		assertThrows(HttpClientErrorException.BadRequest.class, () -> repo.updateEstado("ORD-0014", "VOLANDO"));
 	}
+
+	// ---------- Spec 036: la fecha y hora de creación pasa tal cual ----------
+
+	@Test
+	void laFechaYHoraDeCreacionLlegaDeOrdersYUnaOrdenAnteriorLaTraeNula() {
+		OrderRepository repo = ordenes();
+		servidor.expect(requestTo("http://orders/api/orders"))
+				.andRespond(withSuccess("""
+						[{"id":14,"numeroOrden":"ORD-0014","cliente":"ana-uuid","servicio":"Planchado","estado":"CREADO",
+						  "fecha":"2026-10-21","total":9500.0,"sucursal":"Providencia","clienteNombre":"ana@cleanfresh.com",
+						  "fechaHora":"2026-10-21T04:33:04.123456Z"},
+						 {"id":1,"numeroOrden":"ORD-0001","cliente":"maria","servicio":"Planchado","estado":"ENTREGADO",
+						  "fecha":"2026-09-10","total":9500.0,"sucursal":"Maipú","clienteNombre":null,"fechaHora":null},
+						 {"id":2,"numeroOrden":"ORD-0002","cliente":"juan","servicio":"Planchado","estado":"ENTREGADO",
+						  "fecha":"2026-09-10","total":9500.0,"sucursal":"Maipú"}]""",
+						MediaType.APPLICATION_JSON));
+
+		List<OrderResponse> ordenes = repo.findAll();
+
+		assertEquals("2026-10-21T04:33:04.123456Z", ordenes.get(0).fechaHora());
+		assertEquals("2026-10-21", ordenes.get(0).fecha());
+		org.junit.jupiter.api.Assertions.assertNull(ordenes.get(1).fechaHora());
+		org.junit.jupiter.api.Assertions.assertNull(ordenes.get(2).fechaHora());
+	}
 }
