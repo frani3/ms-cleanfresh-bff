@@ -16,7 +16,8 @@ public class RestClientConfig {
     @Bean
     @Qualifier("ordersRestClient")
     public RestClient ordersRestClient(@Value("${microservices.orders.base-url}") String baseUrl) {
-        return RestClient.builder().baseUrl(baseUrl).build();
+        // Spec 044: orders recibe quién hizo cada acción (X-Actor) y desde dónde (X-Origen) para la auditoría en Kafka.
+        return RestClient.builder().baseUrl(baseUrl).requestInterceptor(new AuditoriaHeadersInterceptor()).build();
     }
 
     @Bean
