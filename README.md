@@ -105,8 +105,9 @@ ejemplo, `/api/reportes` responde 401 sin token, 403 a Operador y Cliente, y
 
 ## Arquitectura y decisiones técnicas
 
-Ver [`CLAUDE.md`](CLAUDE.md) para el contexto del sistema y, en el repo del
-frontend, `EP2/ARQUITECTURA.md` para la arquitectura objetivo de la entrega 2.
+Este servicio es parte de un sistema de varios repositorios. La documentación está en el repo del frontend:
+[`CLAUDE.md`](https://github.com/frani3/cleanfresh-frontend/blob/main/CLAUDE.md) (contexto, AWS, roles y decisiones), [`EP2/ARQUITECTURA.md`](https://github.com/frani3/cleanfresh-frontend/blob/main/EP2/ARQUITECTURA.md) y el
+[índice de la entrega 2](https://github.com/frani3/cleanfresh-frontend/blob/main/EP2/README.md). El [`CLAUDE.md`](CLAUDE.md) de este repo resume lo propio del servicio.
 
 ## Docker
 
