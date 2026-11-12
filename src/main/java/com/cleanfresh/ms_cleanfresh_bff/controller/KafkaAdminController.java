@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.repository.KafkaAdminRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
@@ -20,6 +22,7 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/api/kafka")
+@Tag(name = "Administrador de Kafka", description = "Tópicos, configuraciones, consumer groups y métricas de Kafka. Solo Admin.")
 public class KafkaAdminController {
 
     // Solo estas rutas existen en el administrador; cualquier otra no se reenvía.
@@ -40,6 +43,7 @@ public class KafkaAdminController {
         this.kafkaAdminRepository = kafkaAdminRepository;
     }
 
+    @Operation(summary = "Reenvía a ms-cleanfresh-kafka-admin las rutas conocidas (/cluster, /topics, /groups, /metricas, /topologia/base...); la respuesta y su código salen tal cual")
     @RequestMapping(value = "/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> reenviar(HttpServletRequest request, @RequestBody(required = false) String cuerpo) {

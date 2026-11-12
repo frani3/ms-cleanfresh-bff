@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.repository.MqAdminRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpMethod;
@@ -20,6 +22,7 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/api/mq")
+@Tag(name = "Administrador de RabbitMQ", description = "Colas, exchanges, bindings y métricas de RabbitMQ. Solo Admin.")
 public class MqAdminController {
 
     // Solo estas rutas existen en el administrador; cualquier otra no se reenvía.
@@ -32,6 +35,7 @@ public class MqAdminController {
         this.mqAdminRepository = mqAdminRepository;
     }
 
+    @Operation(summary = "Reenvía a ms-cleanfresh-mq-admin las rutas conocidas (/topologia, /queues/{nombre}, /exchanges/{nombre}, /bindings, /metricas); la respuesta y su código salen tal cual")
     @RequestMapping(value = "/**", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.DELETE})
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> reenviar(HttpServletRequest request, @RequestBody(required = false) String cuerpo) {

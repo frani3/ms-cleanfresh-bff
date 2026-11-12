@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.dto.NotificacionResponse;
 import com.cleanfresh.ms_cleanfresh_bff.service.NotificacionService;
 import org.springframework.http.HttpStatus;
@@ -22,6 +24,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/notificaciones")
+@Tag(name = "Notificaciones", description = "Avisos filtrados por rol: el Cliente los suyos, el Operador los de su sucursal en turno y el Admin todos, en solo lectura.")
 public class NotificacionController {
 
     private final NotificacionService notificacionService;
@@ -30,6 +33,7 @@ public class NotificacionController {
         this.notificacionService = notificacionService;
     }
 
+    @Operation(summary = "Lista los avisos que le corresponden al rol")
     @GetMapping
     @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
     public List<NotificacionResponse> getAll(
@@ -38,6 +42,7 @@ public class NotificacionController {
         return notificacionService.listar(authentication, sucursal);
     }
 
+    @Operation(summary = "Marca como leídos todos los avisos del usuario")
     @PostMapping("/leidas")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
@@ -48,6 +53,7 @@ public class NotificacionController {
     }
 
     /** Marca UN aviso como leído (Spec 034). Solo Operador y Cliente: el Admin es solo lectura (403). */
+    @Operation(summary = "Marca un aviso como leído (404 si es ajeno o no existe; 403 al Admin)")
     @PostMapping("/{id}/leida")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @PreAuthorize("hasAnyRole('Operador', 'Cliente')")

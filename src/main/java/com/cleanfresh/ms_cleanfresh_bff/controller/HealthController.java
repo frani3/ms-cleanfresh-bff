@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +14,10 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "Estado", description = "Estado del BFF.")
 public class HealthController {
 
+    @Operation(summary = "Estado del BFF (requiere token; solo /actuator/health es público)")
     @GetMapping("/health")
     public Map<String, Object> health(JwtAuthenticationToken authentication) {
         Map<String, Object> response = new LinkedHashMap<>();

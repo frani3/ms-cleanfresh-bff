@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.dto.EstadoRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderRequest;
 import com.cleanfresh.ms_cleanfresh_bff.dto.OrderResponse;
@@ -24,6 +26,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/orders")
+@Tag(name = "Órdenes", description = "Órdenes según el rol: el Cliente solo las suyas, el Operador las de su sucursal en turno y el Admin todas.")
 public class OrderController {
 
     private final OrderService orderService;
@@ -32,6 +35,7 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @Operation(summary = "Lista las órdenes que le corresponden al rol")
     @GetMapping
     @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
     public List<OrderResponse> getAll(
@@ -40,12 +44,14 @@ public class OrderController {
         return orderService.getAll(authentication, sucursal);
     }
 
+    @Operation(summary = "Obtiene una orden por su id")
     @GetMapping("/{id}")
     @PreAuthorize("hasAnyRole('Admin', 'Operador', 'Cliente')")
     public OrderResponse getById(@PathVariable Long id, JwtAuthenticationToken authentication) {
         return orderService.getById(id, authentication);
     }
 
+    @Operation(summary = "Lista las órdenes de un estado (Admin y Operador)")
     @GetMapping("/estado/{estado}")
     @PreAuthorize("hasAnyRole('Admin', 'Operador')")
     public List<OrderResponse> getByEstado(
@@ -55,6 +61,7 @@ public class OrderController {
         return orderService.getByEstado(estado, authentication, sucursal);
     }
 
+    @Operation(summary = "Crea una orden: el cliente sale del token y el nombre legible lo resuelve el BFF con Cognito (Cliente y Admin)")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @PreAuthorize("hasAnyRole('Cliente', 'Admin')")
@@ -62,6 +69,7 @@ public class OrderController {
         return orderService.create(authentication, request);
     }
 
+    @Operation(summary = "Cambia el estado de una orden (Admin y Operador de esa sucursal)")
     @PutMapping("/{numeroOrden}/estado")
     @PreAuthorize("hasAnyRole('Admin', 'Operador')")
     public OrderResponse cambiarEstado(

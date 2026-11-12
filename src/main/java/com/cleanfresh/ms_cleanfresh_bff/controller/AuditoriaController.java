@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.repository.AuditoriaRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/api/auditoria")
+@Tag(name = "Auditoría", description = "Línea de tiempo y trazabilidad de Kafka. Solo Admin y solo lectura.")
 public class AuditoriaController {
 
     // Solo estas rutas existen en el servicio; cualquier otra no se reenvía. La raíz es la línea de tiempo.
@@ -29,6 +32,7 @@ public class AuditoriaController {
         this.auditoriaRepository = auditoriaRepository;
     }
 
+    @Operation(summary = "Reenvía la consulta a ms-cleanfresh-auditoria: /api/auditoria (filtros usuario, tipo, entidadId, desde, hasta, pagina y tamano), /ordenes/{numero} y /tipos")
     @GetMapping({"", "/**"})
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> consultar(HttpServletRequest request) {

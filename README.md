@@ -21,6 +21,8 @@ Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 
 ## Endpoints
 
+Documentación OpenAPI (Swagger, Spec 046): `http://localhost:8080/swagger-ui.html` y el contrato en `/v3/api-docs`. La documentación es pública (solo describe el contrato); para llamar a un endpoint desde Swagger hay que pulsar *Authorize* y pegar un access token de Cognito.
+
 | Método | Ruta | Roles | Descripción |
 |---|---|---|---|
 | GET | `/actuator/health` | público | Health check de infraestructura |

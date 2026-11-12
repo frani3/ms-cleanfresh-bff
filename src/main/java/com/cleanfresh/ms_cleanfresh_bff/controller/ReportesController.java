@@ -1,5 +1,7 @@
 package com.cleanfresh.ms_cleanfresh_bff.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import com.cleanfresh.ms_cleanfresh_bff.repository.ReportesRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
@@ -18,6 +20,7 @@ import java.util.regex.Pattern;
  */
 @RestController
 @RequestMapping("/api/reportes")
+@Tag(name = "Reportes", description = "Reportes de Kafka (KPIs, ventas por hora, lead time, servicios más pedidos). Solo Admin y solo lectura.")
 public class ReportesController {
 
     // Solo estas rutas existen en el servicio; cualquier otra no se reenvía. La raíz son los pedidos por sucursal.
@@ -29,6 +32,7 @@ public class ReportesController {
         this.reportesRepository = reportesRepository;
     }
 
+    @Operation(summary = "Reenvía la consulta a ms-cleanfresh-reportes: /api/reportes, /kpis, /ventas-por-hora y /top-servicios, con ?range=last1h|last24h|last7d|last30d")
     @GetMapping({"", "/**"})
     @PreAuthorize("hasRole('Admin')")
     public ResponseEntity<String> consultar(HttpServletRequest request) {
