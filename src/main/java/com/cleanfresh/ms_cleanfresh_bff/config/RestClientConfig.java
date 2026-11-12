@@ -61,4 +61,11 @@ public class RestClientConfig {
     public RestClient mqAdminRestClient(@Value("${microservices.mq-admin.base-url}") String baseUrl) {
         return RestClient.builder().baseUrl(baseUrl).build();
     }
+
+    // Spec 044: administrador de Kafka (solo lo alcanza el Admin, por KafkaAdminController).
+    @Bean
+    @Qualifier("kafkaAdminRestClient")
+    public RestClient kafkaAdminRestClient(@Value("${microservices.kafka-admin.base-url}") String baseUrl) {
+        return RestClient.builder().baseUrl(baseUrl).build();
+    }
 }

@@ -41,3 +41,5 @@ microservices:
     base-url: ${NOTIFICACIONES_SERVICE_URL:http://localhost:8083}
   mq-admin:
     base-url: ${MQ_ADMIN_SERVICE_URL:http://localhost:8086}
+  kafka-admin:
+    base-url: ${KAFKA_ADMIN_SERVICE_URL:http://localhost:8087}
