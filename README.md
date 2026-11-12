@@ -35,8 +35,8 @@ Proyecto individual de **DSY1107 Cloud Native 1** (DuocUC).
 | GET | `/api/notificaciones` | Admin, Operador, Cliente | Avisos según el rol: el Cliente los suyos (por el `username` del token), el Operador los de su sucursal en turno (`?sucursal=`), el Admin todos |
 | POST | `/api/notificaciones/leidas` | Admin, Operador, Cliente | Marca como leídos todos los del usuario (el Admin no marca nada: es solo lectura) |
 | POST | `/api/notificaciones/{id}/leida` | Operador, Cliente | Marca como leído **un** aviso (Spec 034). El destinatario sale del token; un aviso ajeno o inexistente responde `404`; el Admin `403` |
-| GET | `/api/reportes` | Admin | Reporte por sucursal (hoy respuesta fija, EP2) |
-| GET | `/api/auditoria` | Admin | Registro de auditoría (hoy respuesta fija, EP2) |
+| GET | `/api/reportes`, `/api/reportes/kpis`, `/api/reportes/ventas-por-hora`, `/api/reportes/top-servicios` | Admin | Reportes calculados con los eventos de Kafka (Spec 044): pedidos por sucursal, KPIs con lead time y estados activos, ventas por hora y servicios más pedidos. Reenvía a `ms-cleanfresh-reportes` (:8084) con su query string (`?range=last24h`) y devuelve su respuesta tal cual; solo lectura |
+| GET | `/api/auditoria`, `/api/auditoria/ordenes/{numero}`, `/api/auditoria/tipos` | Admin | Auditoría de Kafka (Spec 044): línea de tiempo con filtros (`usuario`, `tipo`, `entidadId`, `desde`, `hasta`, `pagina`, `tamano`) y trazabilidad de una orden. Reenvía a `ms-cleanfresh-auditoria` (:8085) y devuelve su respuesta tal cual; solo lectura |
 | GET/POST/DELETE | `/api/mq/**` | Admin | Administrador de RabbitMQ (Spec 033): topología, colas, exchanges, bindings y métricas. Reenvía a `ms-cleanfresh-mq-admin` (:8086) y devuelve su respuesta tal cual; solo reenvía las rutas conocidas |
 | GET/POST/PUT/DELETE | `/api/kafka/**` | Admin | Administrador de Kafka (Spec 044): clúster, tópicos, configuraciones, consumer groups y métricas. Reenvía a `ms-cleanfresh-kafka-admin` (:8087) y devuelve su respuesta tal cual; solo reenvía las rutas conocidas |
 
